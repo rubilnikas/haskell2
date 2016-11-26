@@ -1,2 +1,2 @@
 # haskell2
-Tick Tac Toe robot
+Tic Tac Toe robot
