@@ -16,7 +16,12 @@ cabal-version:       >=1.10
 library
   hs-source-dirs:      src
   exposed-modules:     Lib
+                     , Model.Move
+                     , Model.Deserialization
+                     , Resolver.MoveResolver
   build-depends:       base >= 4.7 && < 5
+                     , parsec
+                     , containers
   default-language:    Haskell2010
 
 executable haskell2
@@ -25,6 +30,7 @@ executable haskell2
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   build-depends:       base
                      , haskell2
+                     , parsec
   default-language:    Haskell2010
 
 test-suite haskell2-test
@@ -33,6 +39,8 @@ test-suite haskell2-test
   main-is:             Spec.hs
   build-depends:       base
                      , haskell2
+                     , hspec
+                     , QuickCheck
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   default-language:    Haskell2010
 
