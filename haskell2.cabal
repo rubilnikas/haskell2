@@ -31,6 +31,8 @@ executable haskell2
   build-depends:       base
                      , haskell2
                      , parsec
+                     , HTTP
+                     , network-uri
   default-language:    Haskell2010
 
 test-suite haskell2-test

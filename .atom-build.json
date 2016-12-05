@@ -1,14 +1,10 @@
 {
-  "cmd": "cabal build",
+  "cmd": "stack build",
   "name": "build",
   "targets": {
     "run":{
-      "cmd":"start dist\\build\\haskell2\\haskell2.exe",
-      "keymap": "ctrl-f5"
-    },
-    "test":{
-      "cmd": "stack test",
-      "keymap": "ctr-shift-f5"
+      "cmd":"stack test",
+      "keymap": "ctrl-7"
     }
   }
 }

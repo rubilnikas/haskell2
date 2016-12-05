@@ -61,6 +61,13 @@ parseJsonPair = do
     value <- parseJson
     return $ JPair (key, value)
 
+deserialize:: String -> Maybe [Move]
+deserialize source = case (parse parseJson "" source) of
+            Left err  -> Nothing
+            Right xs  -> Just $ toMoves xs
+
+toMoves:: JObject -> [Move]
+toMoves jobject = [Move 1 1 Nothing 0]
 
 {-
 parseMove :: Parser Val
