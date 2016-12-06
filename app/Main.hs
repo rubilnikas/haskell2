@@ -16,6 +16,7 @@ main = do
 
 wait:: String -> String -> Player -> IO ()
 wait id player p = do
+   putStrLn "wait"
    response <- getMoves id player
    let moves = deserialize response
    atack id player p moves
@@ -31,5 +32,6 @@ atack id player p (Just moves) = let
     _ -> case (resolve moves p) of
       Nothing   -> putStrLn "Draw"
       Just move -> do
+        putStrLn "PrePost"
         postMove id player (serialize (moves++[move]))
         wait id player p

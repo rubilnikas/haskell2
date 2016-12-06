@@ -12,4 +12,11 @@ serialize m = let
 
 seriaizeMoves:: [Move] -> Int -> String -> String
 seriaizeMoves [] _ content = content
-seriaizeMoves (m:tail) count content = seriaizeMoves tail (count + 1) $ content ++ show count ++ ":" ++ (unpack $ encode m)
+seriaizeMoves (m:tail) count content = let
+  withCount = content ++ "\"" ++ show count ++ "\":"
+  sep = getSeperator tail
+  in seriaizeMoves tail (count + 1) $ withCount ++ (unpack $ encode m) ++ sep
+  where
+    getSeperator:: [a] -> String
+    getSeperator [] = ""
+    getSeperator _ = ","

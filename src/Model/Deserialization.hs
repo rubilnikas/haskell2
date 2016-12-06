@@ -61,7 +61,9 @@ parseJsonPair = do
     return $ JPair (key, value)
 
 deserialize:: String -> Maybe [Move]
-deserialize source = case (parse parseJson "" source) of
+deserialize source = let
+  noSpaces = filter (\c -> c /= ' ') source
+  in case (parse parseJson "" noSpaces) of
             Left err  -> Nothing
             Right xs  -> Just $ toMoves xs
 
