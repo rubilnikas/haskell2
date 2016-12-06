@@ -9,7 +9,8 @@ resolve:: [Move] -> Player -> Maybe Move
 resolve m p = let
   board = fillBoard m getEmptyBoard
   posMoves = filter (\mp -> (player mp) == (Nothing:: Maybe Player)) board
-  in minimax board posMoves Max p 0
+  move = minimax board posMoves Max p 0
+  in applyPlayerMaybe move p
 
 minimax:: [Move] -> [Move] -> MiniMax -> Player -> Int -> Maybe Move
 minimax _ [] _ _ _  = Nothing
@@ -63,15 +64,15 @@ getIndexOfMoveInBoard move = (x move) * 3 + (y move)
 
 winner:: [Move] -> Maybe Player
 winner board = case(map (\m -> player m) board) of
-[a, b, c, _, _, _, _, _, _] | isJust a && a == b && b == c -> a
-[_, _, _, a, b, c, _, _, _] | isJust a && a == b && b == c -> a
-[_, _, _, _, _, _, a, b, c] | isJust a && a == b && b == c -> a
-[a, _, _, b, _, _, c, _, _] | isJust a && a == b && b == c -> a
-[_, a, _, _, b, _, _, c, _] | isJust a && a == b && b == c -> a
-[_, _, a, _, _, b, _, _, c] | isJust a && a == b && b == c -> a
-[a, _, _, _, b, _, _, _, c] | isJust a && a == b && b == c -> a
-[_, _, a, _, b, _, c, _, _] | isJust a && a == b && b == c -> a
-_                                                          -> Nothing
+  [a, b, c, _, _, _, _, _, _] | isJust a && a == b && b == c -> a
+  [_, _, _, a, b, c, _, _, _] | isJust a && a == b && b == c -> a
+  [_, _, _, _, _, _, a, b, c] | isJust a && a == b && b == c -> a
+  [a, _, _, b, _, _, c, _, _] | isJust a && a == b && b == c -> a
+  [_, a, _, _, b, _, _, c, _] | isJust a && a == b && b == c -> a
+  [_, _, a, _, _, b, _, _, c] | isJust a && a == b && b == c -> a
+  [a, _, _, _, b, _, _, _, c] | isJust a && a == b && b == c -> a
+  [_, _, a, _, b, _, c, _, _] | isJust a && a == b && b == c -> a
+  _                                                          -> Nothing
 
 data MiniMax = Min | Max
   deriving (Show, Eq)

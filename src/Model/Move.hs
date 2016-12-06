@@ -1,4 +1,10 @@
+{-# LANGUAGE OverloadedStrings #-}
 module Model.Move where
+import Data.Aeson
+
+instance ToJSON Move where
+    toJSON (Move x y (Just p) _) =
+        object ["x" .= x, "y" .= y, "v" .= (toCharPlayer p)]
 
 reverseP:: Player -> Player
 reverseP X = O
@@ -26,5 +32,27 @@ instance Ord Move where
 
 applyRank:: Move -> Int -> Move
 applyRank (Move x y p _) rank = Move x y p rank
+
 applyPlayer:: Move -> Player -> Move
 applyPlayer (Move x y _ r) p = Move x y (Just p) r
+
+applyPlayerMaybe:: Maybe Move -> Player -> Maybe Move
+applyPlayerMaybe (Just (Move x y _ r)) p = Just (Move x y (Just p) r)
+applyPlayerMaybe n _ = n
+
+toCharPlayer:: Player -> String
+toCharPlayer X = "X"
+toCharPlayer O = "O"
+
+toMaybePlayer:: String -> Maybe Player
+toMaybePlayer "X" = Just X
+toMaybePlayer "x" = Just X
+toMaybePlayer "O" = Just O
+toMaybePlayer "o" = Just O
+toMaybePlayer _   = Nothing
+
+toPlayer:: String -> Player
+toPlayer "X" = X
+toPlayer "x" = X
+toPlayer "O" = O
+toPlayer "o" = O

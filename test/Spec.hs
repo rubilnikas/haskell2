@@ -12,9 +12,9 @@ main =  hspec $ do
   describe "deserialization" $ do
     it "empty string -> nothing" $ do
        deserialize "" `shouldBe` (Nothing :: Maybe [Move])
-  {-  it "one move deserialize" $ do
+    it "one move deserialize" $ do
       let input = "{\"0\":{\"x\":1,\"y\":1,\"v\":\"x\"}}"
-      deserialize input `shouldBe` Just [Move 1 1 (Just X) 0]-}
+      deserialize input `shouldBe` Just [Move 1 1 (Just X) 0]
 
 
   describe "Resolver" $ do
@@ -39,16 +39,6 @@ main =  hspec $ do
       length myMovseInBoard `shouldBe` 2
       filledBoard!!5 `shouldBe` move1
       filledBoard!!2 `shouldBe` move2
-    {-it "Good first move" $ do
-      let move = minimax getEmptyBoard Nothing X 0
-      move `shouldBe` Move 1 1 (Just X) 0
-
-    it "Good second move" $ do
-      let prevMoves = [Move 1 1 (Just X) 0]
-      let prevMoves = [Move 1 1 (Just X) 0, Move 2 0 (Just O) 0, Move 0 0 (Just X) 0]
-      let board = fillBoard prevMoves getEmptyBoard
-      let move = minimax Board Nothing O 0
-      move `shouldBe` Move 1 1 (Just X) 0-}
 
     it "Do defense" $ do
       let prevXMoves = [Move 1 0 (Just X) 0, Move 0 1 (Just X) 0, Move 2 0 (Just X) 0]
@@ -56,5 +46,5 @@ main =  hspec $ do
       let prevMoves = prevXMoves ++ prevOMoves
       let board = fillBoard prevMoves getEmptyBoard
       let posMoves = filter (\mp -> (player mp) == (Nothing:: Maybe Player)) board
-      let result = minimax2 board posMoves Max X 0
-      result `shouldBe` Move 2 2 (Just X) 0
+      let result = resolve prevMoves X
+      result `shouldBe` Just (Move 2 2 (Just X) 0)

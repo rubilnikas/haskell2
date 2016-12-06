@@ -6,13 +6,19 @@ import Text.Parsec
 import Text.Parsec.String
 import Model.Move
 
+parseQuotedString :: Parser String
+parseQuotedString = do
+    _ <- string "\""
+    s <- many alphaNum
+    _ <- string "\""
+    return $ s
+
 data Pair = Pair{
   key:: String,
   value:: JObject
 } deriving Show
 
-data JObject = JInt Integer
-  | JChar Char
+data JObject = JInt Int
   | JString String
   | JPair (String, JObject)
   | JList [JObject]
@@ -20,20 +26,13 @@ data JObject = JInt Integer
 
 parseJson :: Parser JObject
 parseJson = parseMapAsList
-  <|> parseJsonInt
-  <|> parseJsonPair
   <|> parseJsonString
-  <|> parseJsonChar
+  <|> parseJsonInt
   <?> "end of line"
-
-parseJsonChar :: Parser JObject
-parseJsonChar = do
-  s <- alphaNum
-  return $ JChar s
 
 parseJsonString :: Parser JObject
 parseJsonString = do
-  s <- many1 alphaNum
+  s <- parseQuotedString
   return $ JString s
 
 parseJsonInt :: Parser JObject
@@ -56,7 +55,7 @@ parseMapAsList = do
 
 parseJsonPair:: Parser JObject
 parseJsonPair = do
-    key   <- many1 alphaNum
+    key   <- parseQuotedString
     _     <- string ":"
     value <- parseJson
     return $ JPair (key, value)
@@ -67,24 +66,23 @@ deserialize source = case (parse parseJson "" source) of
             Right xs  -> Just $ toMoves xs
 
 toMoves:: JObject -> [Move]
-toMoves jobject = [Move 1 1 Nothing 0]
+toMoves (JList list) = map toMove list
+  where
+    toMove:: JObject -> Move
+    toMove (JPair (_, JList jmove)) = let
+      x = findInt jmove "x"
+      y = findInt jmove "y"
+      p = toMaybePlayer $ findString jmove "v"
+      in Move x y p 0
 
-{-
-parseMove :: Parser Val
-parseMove = do
-  _
-  _    <- string "{"
-  let move = Move 1 1 $ Just X
-  _    <- string "}"
-  return $ MoveVal move
+    findInt:: [JObject] -> String -> Int
+    findInt ((JPair (fname, JInt val)):tail) name = if fname == name
+                                                    then val
+                                                    else findInt tail name
+    findInt (h:t) s = findInt t s
 
-
-parseJsonMovesMapAsList :: Parser Val
-parseJsonMovesMapAsList = do
-    _ <- string "{"
-    l <- many parseMove
-    _ <- string "}"
-    return $ ListOfMovesVals l
-
-deserialize:: String -> [Move]
-deserialize _ = [Move 1 1 $ Just X]-}
+    findString:: [JObject] -> String -> String
+    findString ((JPair (fname, JString val)):tail) name = if fname == name
+                                                    then val
+                                                    else findString tail name
+    findString (h:t) s = findString t s

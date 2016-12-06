@@ -1,72 +1,35 @@
 module Main where
 import HttpClient.TicTacToeApiClient
 import System.Environment
-
-import Text.Parsec
-import Text.Parsec.String
-
-
-data Val = IntVal Integer
-  | StringVal String
-  | ListOfVals [Val]
-  deriving Show
-
-parseBencode :: Parser Val
-parseBencode = parseBencodeInt
-  <|> parseBencodeList
-  <|> parseBencodeStr
-
-parseBencodeList :: Parser Val
-parseBencodeList = do
-    _ <- string "l"
-    l <- many parseBencode
-    _ <- string "e"
-    return $ ListOfVals l
-
-parseBencodeStr :: Parser Val
-parseBencodeStr = do
-    l <- many1 digit
-    _ <- string ":"
-    s <- count (read l) anyChar
-    return $ StringVal s
-
-parseBencodeInt :: Parser Val
-parseBencodeInt = do
-    _ <- string "i"
-    i <- parseIntVal
-    _ <- string "e"
-    return i
-
-parseIntVal :: Parser Val
-parseIntVal = (many1 digit >>=
-  (\v -> return (IntVal (read v))))
-
-
+import Resolver.MoveResolver
+import Model.Deserialization
+import Model.Serialization
+import Model.Move
 
 main :: IO ()
 main = do
     args <- getArgs
     case args of
-      (id:"1":xs) -> atack id "1" ""
-      (id:"2":xs) -> wait id "2"
-      _           -> putStrLn "Wrong number of arguments"
+      (id:"1":p:xs) -> atack id "1" (toPlayer p) (Just [])
+      (id:"2":p:xs) -> wait id "2" (toPlayer p)
+      _           -> putStrLn "Wrong number of arguments. id 1/2 X/O"
 
-wait:: String -> String -> IO ()
-wait id player = do
-   moves <- getMoves id player
-   atack id player moves
+wait:: String -> String -> Player -> IO ()
+wait id player p = do
+   response <- getMoves id player
+   let moves = deserialize response
+   atack id player p moves
 
-atack:: String -> String -> String -> IO ()
-atack id player moves = do
-   mm <- getMoves id player
-   putStrLn mm
-
-
-{-
-main = do
-  putStrLn $ getMoves "myId" "player"
-  putStrLn $ postMove "myId" "player" "BODY"
-
-  putStrLn "Press any key to exit..."
-  a <- getChar
-  putStrLn $ a:[]-}
+atack:: String -> String -> Player -> Maybe [Move] -> IO ()
+atack _ _ _ Nothing = do
+  putStrLn "Something realy bad happened. Moves can not be Nothing"
+atack id player p (Just moves) = let
+  board = fillBoard moves getEmptyBoard
+  in case (winner board) of
+    (Just X) -> putStrLn "X won"
+    (Just O) -> putStrLn "Y won"
+    _ -> case (resolve moves p) of
+      Nothing   -> putStrLn "Draw"
+      Just move -> do
+        postMove id player (serialize (moves++[move]))
+        wait id player p
