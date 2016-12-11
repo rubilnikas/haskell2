@@ -5,49 +5,64 @@ import Data.Sequence (fromList, update)
 import Data.List (filter, minimum, maximum)
 import Data.Foldable (toList)
 
-resolve:: [Move] -> Player -> Maybe Move
-resolve m p = let
+resolve:: [Move] -> Player -> Int -> Maybe Move
+resolve m p lvl = let
   board = fillBoard m getEmptyBoard
   posMoves = filter (\mp -> (player mp) == (Nothing:: Maybe Player)) board
-  move = minimax board posMoves Max p 0
+  move = minimax board posMoves Max p lvl
   in applyPlayerMaybe move p
 
 minimax:: [Move] -> [Move] -> MiniMax -> Player -> Int -> Maybe Move
 minimax _ [] _ _ _  = Nothing
 minimax board ap mx p deep = let
-  ranked = map (getRanked board mx p deep) ap
+  getRank = (getRanked board mx p deep)
+  ranked = map (\rm -> applyRank rm $ getRank rm) ap
   in case (mx) of
-    Max -> posOrZero ranked
-    Min -> negOrZero ranked
+    Max | (length board) == (length ap) -> zeroOrPos ranked
+    Max                                 -> posOrZero ranked Nothing
+    Min                                 -> negOrZero ranked Nothing
   where
-    getRanked:: [Move] -> MiniMax -> Player -> Int -> Move -> Maybe Move
-    getRanked b mm p d m = let
-      am = applyPlayer m p
-      mb = fillBoard [am] b
-      in case(winner mb) of
-        Nothing -> let
-          allPoss = filter (\mp -> (player mp) == (Nothing:: Maybe Player)) mb
-          in case(allPoss) of
-            [] -> Just am
-            _  -> minimax mb allPoss (reverseM mm) (reverseP p) (d+1)
-        Just _ -> case(mm)of
-          Min -> Just (applyRank am (-10))
-          Max -> Just (applyRank am (10))
-    negOrZero:: [Maybe Move] -> Maybe Move
-    negOrZero (h:[]) = h
-    negOrZero (h:tail) = case (h) of
-      Nothing -> negOrZero tail
-      Just mr -> case (rank mr) of
-        a | a < 0 -> h
-        _         -> negOrZero tail
-    posOrZero:: [Maybe Move] -> Maybe Move
-    posOrZero (h:[]) = h
-    posOrZero (h:tail) = case (h) of
-      Nothing -> posOrZero tail
-      Just mr -> case (rank mr) of
-        a | a > 0 -> h
-        _         -> negOrZero tail
+    zeroOrPos:: [Move] -> Maybe Move
+    zeroOrPos [] = Nothing
+    zeroOrPos (h:tail) = case (rank h) of
+      a | a >= 0 -> Just h
+      _          -> zeroOrPos tail
+    negOrZero:: [Move] -> Maybe Move -> Maybe Move
+    negOrZero (h:[]) z = case z of
+      Nothing -> Just h
+      _       -> z
+    negOrZero (h:tail) z = case (rank h) of
+        a | a < 0  -> Just h
+        a | a == 0 -> negOrZero tail (Just h)
+        _          -> negOrZero tail z
+    posOrZero:: [Move]  -> Maybe Move -> Maybe Move
+    posOrZero (h:[]) z = case z of
+      Nothing -> Just h
+      _       -> z
+    posOrZero (h:tail) z = case (rank h) of
+        a | a > 0  -> Just h
+        a | a == 0 -> posOrZero tail (Just h)
+        _          -> posOrZero tail z
 
+getRanked:: [Move] -> MiniMax -> Player -> Int -> Move -> Int
+getRanked _ _ _ 0 _ = 0
+getRanked b mm p d m = let
+  am = applyPlayer m p
+  mb = fillBoard [am] b
+  nmm = reverseM mm
+  in case(winner mb) of
+    Nothing -> let
+      allPoss = filter (\mp -> (player mp) == (Nothing:: Maybe Player)) mb
+      in case(allPoss) of
+        [] -> 0
+        _  -> let
+          ranked = map (getRanked mb (reverseM mm) (reverseP p) (d-1)) allPoss
+          in case nmm of
+            Min -> minimum ranked
+            Max -> maximum ranked
+    Just _ -> case(mm)of
+      Min -> -10
+      Max -> 10
 
 getEmptyBoard:: [Move]
 getEmptyBoard = [Move x y Nothing 0 | x <- [0 .. 2], y <- [0 .. 2]]
