@@ -1,2 +1,2 @@
-# haskell2
-Tic Tac Toe robot
+
+# Tic Tac Toe AI
