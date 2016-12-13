@@ -56,3 +56,25 @@ toPlayer "X" = X
 toPlayer "x" = X
 toPlayer "O" = O
 toPlayer "o" = O
+
+zeroOrPos:: [Move] -> Maybe Move
+zeroOrPos [] = Nothing
+zeroOrPos (h:tail) = case (rank h) of
+  a | a >= 0 -> Just h
+  _          -> zeroOrPos tail
+negOrZero:: [Move] -> Maybe Move -> Maybe Move
+negOrZero (h:[]) z = case z of
+  Nothing -> Just h
+  _       -> z
+negOrZero (h:tail) z = case (rank h) of
+    a | a < 0  -> Just h
+    a | a == 0 -> negOrZero tail (Just h)
+    _          -> negOrZero tail z
+posOrZero:: [Move]  -> Maybe Move -> Maybe Move
+posOrZero (h:[]) z = case z of
+  Nothing -> Just h
+  _       -> z
+posOrZero (h:tail) z = case (rank h) of
+    a | a > 0  -> Just h
+    a | a == 0 -> posOrZero tail (Just h)
+    _          -> posOrZero tail z

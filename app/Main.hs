@@ -27,21 +27,30 @@ atack _ _ _ Nothing _ = do
 atack id player p (Just moves) lvl = let
   board = fillBoard moves getEmptyBoard
   in case (winner board) of
-    (Just X) -> putStrLn "X won"
-    (Just O) -> putStrLn "Y won"
+    (Just X) -> do
+      putStrLn "X won"
+      showHistoryUrl id
+    (Just O) -> do
+      putStrLn "O won"
+      showHistoryUrl id
     _ -> case (resolve moves p lvl) of
-      Nothing   -> putStrLn "Draw"
+      Nothing   -> do
+        putStrLn "Draw"
+        showHistoryUrl id
       Just move -> case winner $ fillBoard (moves++[move]) getEmptyBoard of
         (Just X) -> do
            postMove id player (serialize (moves++[move]))
            putStrLn "X won"
+           showHistoryUrl id
         (Just O) -> do
           postMove id player (serialize (moves++[move]))
-          putStrLn "Y won"
+          putStrLn "O won"
+          showHistoryUrl id
         Nothing  -> case length (moves++[move]) of
           9 -> do
             postMove id player (serialize (moves++[move]))
             putStrLn "Draw"
+            showHistoryUrl id
           _ -> do
             postMove id player (serialize (moves++[move]))
             wait id player p lvl
@@ -50,3 +59,6 @@ getLvlInt:: String -> Int
 getLvlInt s = case readMaybe s :: Maybe Int of
   Just lvl | lvl >= 0 && lvl < 10 -> lvl
   Nothing                         -> 3
+
+showHistoryUrl:: String -> IO()
+showHistoryUrl url = putStrLn $ "Your game here: http://tictactoe.homedir.eu/history/" ++ url

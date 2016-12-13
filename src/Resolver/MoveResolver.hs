@@ -21,28 +21,6 @@ minimax board ap mx p deep = let
     Max | (length board) == (length ap) -> zeroOrPos ranked
     Max                                 -> posOrZero ranked Nothing
     Min                                 -> negOrZero ranked Nothing
-  where
-    zeroOrPos:: [Move] -> Maybe Move
-    zeroOrPos [] = Nothing
-    zeroOrPos (h:tail) = case (rank h) of
-      a | a >= 0 -> Just h
-      _          -> zeroOrPos tail
-    negOrZero:: [Move] -> Maybe Move -> Maybe Move
-    negOrZero (h:[]) z = case z of
-      Nothing -> Just h
-      _       -> z
-    negOrZero (h:tail) z = case (rank h) of
-        a | a < 0  -> Just h
-        a | a == 0 -> negOrZero tail (Just h)
-        _          -> negOrZero tail z
-    posOrZero:: [Move]  -> Maybe Move -> Maybe Move
-    posOrZero (h:[]) z = case z of
-      Nothing -> Just h
-      _       -> z
-    posOrZero (h:tail) z = case (rank h) of
-        a | a > 0  -> Just h
-        a | a == 0 -> posOrZero tail (Just h)
-        _          -> posOrZero tail z
 
 getRanked:: [Move] -> MiniMax -> Player -> Int -> Move -> Int
 getRanked _ _ _ 0 _ = 0

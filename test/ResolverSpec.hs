@@ -34,7 +34,7 @@ resolverSpec = do
       let game = worker [] X (9,6)
       let inBoard = fillBoard game getEmptyBoard
       let win = winner inBoard
-      win `shouldBe` (Just X)
+      win `shouldBe` (Nothing :: Maybe Player)
 
     it "Correct resolves index of move x * 3 + y" $ do
       (getIndexOfMoveInBoard $ Move 2 1 Nothing 0) `shouldBe` 7
